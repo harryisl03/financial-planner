@@ -1,22 +1,22 @@
 // Auth tables (Better Auth)
-export * from './auth';
+export * from './auth.js';
 
 // User preferences
-export * from './preferences';
+export * from './preferences.js';
 
 // Financial domain
-export * from './accounts';
-export * from './categories';
-export * from './transactions';
-export * from './budgets';
-export * from './savings';
-export * from './bills';
+export * from './accounts.js';
+export * from './categories.js';
+export * from './transactions.js';
+export * from './budgets.js';
+export * from './savings.js';
+export * from './bills.js';
 
 // Notifications
-export * from './notifications';
+export * from './notifications.js';
 
 // External integrations
-export * from './connected-accounts';
+export * from './connected-accounts.js';
 
 // Billing
-export * from './subscriptions';
+export * from './subscriptions.js';
