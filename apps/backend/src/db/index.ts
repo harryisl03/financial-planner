@@ -29,7 +29,9 @@ const schema = {
 const connectionString = process.env.DATABASE_URL!;
 
 // For query purposes
-const queryClient = postgres(connectionString);
+const queryClient = postgres(connectionString, {
+    ssl: process.env.NODE_ENV === 'production' ? 'require' : false
+});
 export const db = drizzle(queryClient, { schema });
 
 // Export schema for use in other files
