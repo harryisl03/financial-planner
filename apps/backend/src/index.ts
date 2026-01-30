@@ -8,6 +8,9 @@ import { toNodeHandler } from 'better-auth/node';
 import { seedSystemCategories } from './services/category.service.js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { db } from './db/index.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import accountRoutes from './routes/account.routes.js';
 import transactionRoutes from './routes/transaction.routes.js';
@@ -99,9 +102,38 @@ async function main() {
         await seedSystemCategories();
 
         // Run migrations programmatically
-        console.log('📦 Running database migrations...');
-        await migrate(db, { migrationsFolder: 'drizzle' });
-        console.log('✅ Migrations completed!');
+        console.log('📦 Starting database migration process...');
+        console.log('Current working directory:', process.cwd());
+
+        const migrationFolder = path.join(process.cwd(), 'drizzle');
+        console.log('Looking for migrations in:', migrationFolder);
+
+        if (fs.existsSync(migrationFolder)) {
+            console.log('✅ Migration folder found.');
+            const files = fs.readdirSync(migrationFolder);
+            console.log('Migration files found:', files);
+        } else {
+            console.error('❌ Migration folder NOT found!');
+            // Try relative path as fallback
+            console.log('Checking relative ./drizzle path...');
+            if (fs.existsSync('./drizzle')) {
+                console.log('✅ ./drizzle exists.');
+            } else {
+                console.log('❌ ./drizzle does not exist either.');
+            }
+        }
+
+        try {
+            await migrate(db, { migrationsFolder: 'drizzle' });
+            console.log('✅ Migrations completed successfully!');
+        } catch (migrationError: any) {
+            console.error('❌ Migration FAILED detailed error:', migrationError);
+            // Dump error properties
+            if (migrationError.code) console.error('Error Code:', migrationError.code);
+            if (migrationError.detail) console.error('Error Detail:', migrationError.detail);
+            // Rethrow to stop startup? or continue? better stop.
+            throw migrationError;
+        }
 
         app.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
