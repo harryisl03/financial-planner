@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db } from '../db/index.js';
-import { bills } from '../db/schema';
+import { bills } from '../db/schema/index.js';
 import { eq, and, desc } from 'drizzle-orm';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { z } from 'zod';
