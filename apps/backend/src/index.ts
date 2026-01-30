@@ -6,6 +6,8 @@ import compression from 'compression';
 import { auth } from './auth/index.js';
 import { toNodeHandler } from 'better-auth/node';
 import { seedSystemCategories } from './services/category.service.js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { db } from './db/index.js';
 
 import accountRoutes from './routes/account.routes.js';
 import transactionRoutes from './routes/transaction.routes.js';
@@ -95,6 +97,11 @@ async function main() {
     try {
         // Seed default categories
         await seedSystemCategories();
+
+        // Run migrations programmatically
+        console.log('📦 Running database migrations...');
+        await migrate(db, { migrationsFolder: 'drizzle' });
+        console.log('✅ Migrations completed!');
 
         app.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
