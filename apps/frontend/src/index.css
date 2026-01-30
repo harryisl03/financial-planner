@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@layer utilities {
+    .gradient-text-primary {
+        background: linear-gradient(to right, #10B981, #06B6D4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .gradient-icon-primary {
+        background: linear-gradient(to right, #10B981, #06B6D4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .glass-card {
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .dark .glass-card {
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-panel {
+        background-color: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .glass-sidebar {
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .dark .glass-sidebar {
+        background-color: rgba(30, 41, 59, 0.8);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar-glass {
+        background-color: rgba(30, 41, 59, 0.85);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-header {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        backdrop-filter: blur(12px);
+    }
+
+    .dark .glass-header {
+        background-color: rgba(15, 23, 42, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+}
+
+@layer base {
+    body {
+        @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50 transition-colors duration-300;
+        font-family: 'Inter', sans-serif;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1E293B;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}

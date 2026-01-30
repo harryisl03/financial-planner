@@ -1,0 +1,18 @@
+{
+    "name": "financial-planner-root",
+    "private": true,
+    "scripts": {
+        "dev:frontend": "cd apps/frontend && npm run dev",
+        "dev:backend": "cd apps/backend && npm run dev",
+        "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run db:studio\"",
+        "install:frontend": "cd apps/frontend && npm install",
+        "install:backend": "cd apps/backend && npm install",
+        "install:all": "npm run install:frontend && npm run install:backend",
+        "db:push": "cd apps/backend && npm run db:push",
+        "db:studio": "cd apps/backend && npm run db:studio",
+        "share": "npx ngrok http 5173"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.0"
+    }
+}

@@ -1,0 +1,110 @@
+import express from 'express';
+import cors from 'cors';
+import 'dotenv/config';
+import compression from 'compression';
+
+import { auth } from './auth/index.js';
+import { toNodeHandler } from 'better-auth/node';
+import { seedSystemCategories } from './services/category.service.js';
+
+import accountRoutes from './routes/account.routes.js';
+import transactionRoutes from './routes/transaction.routes.js';
+import categoryRoutes from './routes/category.routes.js';
+import budgetRoutes from './routes/budget.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
+import userRoutes from './routes/user.routes.js';
+import statsRoutes from './routes/stats.routes.js';
+import notificationRouter from './routes/notifications.js';
+// import passwordRouter from './routes/password.js'; // Merging into use routes or keeping separate?
+// Let's keep it clean. I'll move the logic to user.routes.js or keep it and mount it better.
+// Actually, mounting at /api/users seems better.
+// import passwordRouter from './routes/password.js';
+import savingsRouter from './routes/savings.routes.js';
+import alertsRouter from './routes/alerts.routes.js';
+import billsRouter from './routes/bills.routes.js';
+import sessionRoutes from './routes/session.routes.js';
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Force restart for changes to take effect
+// Middleware
+app.use(
+    cors({
+        origin: [
+            'http://localhost:5173',
+            'https://waterish-unephemerally-daysi.ngrok-free.dev',
+            process.env.FRONTEND_URL || 'http://localhost:5173'
+        ],
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    })
+);
+app.use(express.json());
+app.use(compression());
+
+// Legacy client fix: Rewrite malformed TOTP URL
+app.use((req, res, next) => {
+    if (req.url.includes('/verify-t-o-t-p')) {
+        req.url = req.url.replace('/verify-t-o-t-p', '/verify-totp');
+    }
+    next();
+});
+
+// Better Auth handler (handles /api/auth/* routes)
+app.all('/api/auth/*', toNodeHandler(auth));
+
+// API routes
+// app.use('/api/auth', authRoutes); // Handled by Better Auth
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/notifications', notificationRouter);
+app.use('/api/savings', savingsRouter);
+app.use('/api/alerts', alertsRouter);
+app.use('/api/bills', billsRouter);
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Error handler
+app.use(
+    (
+        err: any,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) => {
+        console.error('Unhandled error:', err);
+        res.status(err.statusCode || 500).json({
+            error: err.message || 'Internal Server Error',
+            code: err.code || 'INTERNAL_ERROR',
+        });
+    }
+);
+
+// Start server
+async function main() {
+    try {
+        // Seed default categories
+        await seedSystemCategories();
+
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on http://localhost:${PORT}`);
+            console.log(`📖 API docs: http://localhost:${PORT}/api`);
+            console.log(`🔐 Auth: http://localhost:${PORT}/api/auth`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+main();

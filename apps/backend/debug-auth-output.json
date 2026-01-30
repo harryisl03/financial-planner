@@ -1,0 +1,46 @@
+[
+  {
+    "user": {
+      "id": "ecff9128-b282-4295-a160-7baf4533f02a",
+      "name": "Debug User",
+      "email": "debug-ecff9128-b282-4295-a160-7baf4533f02a@example.com",
+      "emailVerified": true,
+      "twoFactorEnabled": false
+    },
+    "accounts": []
+  },
+  {
+    "user": {
+      "id": "xCGf6YcpW99OPcZVOTWSs2kSiZnjRqyS",
+      "name": "Harry Indra S. Lubis",
+      "email": "harryindraslbs@gmail.com",
+      "emailVerified": true,
+      "twoFactorEnabled": false
+    },
+    "accounts": [
+      {
+        "providerId": "google",
+        "hasPassword": false
+      }
+    ]
+  },
+  {
+    "user": {
+      "id": "lEXj0pL7Czo7V4HPyq6cSjZwVapixmSR",
+      "name": "Harry Indra",
+      "email": "harryindraslubis@gmail.com",
+      "emailVerified": true,
+      "twoFactorEnabled": true
+    },
+    "accounts": [
+      {
+        "providerId": "credential",
+        "hasPassword": true
+      },
+      {
+        "providerId": "google",
+        "hasPassword": false
+      }
+    ]
+  }
+]
