@@ -260,7 +260,7 @@ export async function getTrends(userId: string, period: Period = 'month') {
     }));
 }
 
-export async function getBalanceHistory(userId: string, period: 'week' | 'month' | 'year' = 'month') {
+export async function getBalanceHistory(userId: string, period: 'week' | 'month' | 'year' | 'lastMonth' = 'month') {
     // 1. Get current total balance
     const accounts = await db.query.financialAccounts.findMany({
         where: eq(financialAccounts.userId, userId),

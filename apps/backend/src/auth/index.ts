@@ -51,9 +51,6 @@ export const auth = betterAuth({
     plugins: [
         twoFactor({
             issuer: 'FinDash',
-            totpOptions: {
-                window: 1,
-            }
         }),
     ],
     session: {

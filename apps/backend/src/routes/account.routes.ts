@@ -30,7 +30,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
         const account = await accountService.getAccountById(
             req.user!.id,
-            req.params.id
+            req.params.id as string
         );
         res.json(account);
     } catch (error: any) {
@@ -42,7 +42,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
         const data = createAccountSchema.parse(req.body);
-        const account = await accountService.createAccount(req.user!.id, data);
+        const account = await accountService.createAccount(req.user!.id, { ...data, balance: data.balance.toString() });
         res.status(201).json(account);
     } catch (error: any) {
         res.status(error.statusCode || 400).json({ error: error.message });
@@ -55,8 +55,8 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
         const data = updateAccountSchema.parse(req.body);
         const account = await accountService.updateAccount(
             req.user!.id,
-            req.params.id,
-            data
+            req.params.id as string,
+            { ...data, balance: data.balance?.toString() }
         );
         res.json(account);
     } catch (error: any) {
@@ -67,7 +67,7 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 // Delete account
 router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
-        await accountService.deleteAccount(req.user!.id, req.params.id);
+        await accountService.deleteAccount(req.user!.id, req.params.id as string);
         res.status(204).send();
     } catch (error: any) {
         res.status(error.statusCode || 500).json({ error: error.message });

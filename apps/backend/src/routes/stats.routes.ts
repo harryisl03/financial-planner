@@ -45,7 +45,7 @@ router.get('/trends', requireAuth, async (req: AuthRequest, res: Response) => {
 router.get('/balance-history', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
         const { period } = statsQuerySchema.parse(req.query);
-        const history = await statsService.getBalanceHistory(req.user!.id, period);
+        const history = await statsService.getBalanceHistory(req.user!.id, period as any);
         res.json(history);
     } catch (error: any) {
         res.status(error.statusCode || 500).json({ error: error.message });

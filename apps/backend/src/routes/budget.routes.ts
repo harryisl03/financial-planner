@@ -29,7 +29,7 @@ router.get('/overview', requireAuth, async (req: AuthRequest, res: Response) => 
 router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
         const data = createBudgetSchema.parse(req.body);
-        const budget = await budgetService.createBudget(req.user!.id, data);
+        const budget = await budgetService.createBudget(req.user!.id, { ...data, amount: data.amount.toString() });
         res.status(201).json(budget);
     } catch (error: any) {
         res.status(error.statusCode || 400).json({ error: error.message });
@@ -42,8 +42,8 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
         const data = updateBudgetSchema.parse(req.body);
         const budget = await budgetService.updateBudget(
             req.user!.id,
-            req.params.id,
-            data
+            req.params.id as string,
+            { ...data, amount: data.amount?.toString() }
         );
         res.json(budget);
     } catch (error: any) {
@@ -54,7 +54,7 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 // Delete budget
 router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
-        await budgetService.deleteBudget(req.user!.id, req.params.id);
+        await budgetService.deleteBudget(req.user!.id, req.params.id as string);
         res.status(204).send();
     } catch (error: any) {
         res.status(error.statusCode || 500).json({ error: error.message });

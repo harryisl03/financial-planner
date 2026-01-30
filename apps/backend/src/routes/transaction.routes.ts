@@ -28,7 +28,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
         const transaction = await transactionService.getTransactionById(
             req.user!.id,
-            req.params.id
+            req.params.id as string
         );
         res.json(transaction);
     } catch (error: any) {
@@ -56,8 +56,12 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
         const data = updateTransactionSchema.parse(req.body);
         const transaction = await transactionService.updateTransaction(
             req.user!.id,
-            req.params.id,
-            data
+            req.params.id as string,
+            {
+                ...data,
+                amount: data.amount?.toString(),
+                date: data.date ? new Date(data.date) : undefined
+            }
         );
         res.json(transaction);
     } catch (error: any) {
@@ -68,7 +72,7 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 // Delete transaction
 router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
-        await transactionService.deleteTransaction(req.user!.id, req.params.id);
+        await transactionService.deleteTransaction(req.user!.id, req.params.id as string);
         res.status(204).send();
     } catch (error: any) {
         res.status(error.statusCode || 500).json({ error: error.message });

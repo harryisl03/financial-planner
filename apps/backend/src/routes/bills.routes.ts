@@ -58,7 +58,7 @@ router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
         const { id } = req.params;
 
         const deleted = await db.delete(bills)
-            .where(and(eq(bills.id, id), eq(bills.userId, userId)))
+            .where(and(eq(bills.id, id as string), eq(bills.userId, userId)))
             .returning();
 
         if (!deleted.length) {

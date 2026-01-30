@@ -32,7 +32,7 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
         const data = updateCategorySchema.parse(req.body);
         const category = await categoryService.updateCategory(
             req.user!.id,
-            req.params.id,
+            req.params.id as string,
             data
         );
         res.json(category);
@@ -44,7 +44,7 @@ router.patch('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
 // Delete category
 router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
     try {
-        await categoryService.deleteCategory(req.user!.id, req.params.id);
+        await categoryService.deleteCategory(req.user!.id, req.params.id as string);
         res.status(204).send();
     } catch (error: any) {
         res.status(error.statusCode || 500).json({ error: error.message });
