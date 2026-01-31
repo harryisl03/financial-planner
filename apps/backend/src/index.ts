@@ -36,7 +36,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
-app.set('trust proxy', 1);
+// Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
+app.set('trust proxy', true);
 
 // Force restart for changes to take effect
 // Middleware
