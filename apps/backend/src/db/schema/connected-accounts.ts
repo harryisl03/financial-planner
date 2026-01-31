@@ -6,7 +6,7 @@ import {
     uuid,
     jsonb,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth';
+import { users } from './auth.js';
 
 export const connectedAccounts = pgTable('connected_accounts', {
     id: uuid('id').primaryKey().defaultRandom(),

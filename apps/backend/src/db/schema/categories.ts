@@ -7,7 +7,7 @@ import {
     boolean,
     index,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth';
+import { users } from './auth.js';
 
 export const categories = pgTable('categories', {
     id: uuid('id').primaryKey().defaultRandom(),

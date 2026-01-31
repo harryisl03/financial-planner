@@ -8,8 +8,8 @@ import {
     date,
     index,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth';
-import { categories } from './categories';
+import { users } from './auth.js';
+import { categories } from './categories.js';
 
 export const budgets = pgTable('budgets', {
     id: uuid('id').primaryKey().defaultRandom(),

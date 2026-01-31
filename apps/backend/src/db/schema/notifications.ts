@@ -7,7 +7,7 @@ import {
     varchar,
     index,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth';
+import { users } from './auth.js';
 
 export const notifications = pgTable('notifications', {
     id: uuid('id').primaryKey().defaultRandom(),

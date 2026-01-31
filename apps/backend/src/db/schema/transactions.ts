@@ -7,9 +7,9 @@ import {
     decimal,
     index,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth';
-import { financialAccounts } from './accounts';
-import { categories } from './categories';
+import { users } from './auth.js';
+import { financialAccounts } from './accounts.js';
+import { categories } from './categories.js';
 
 export const transactions = pgTable('transactions', {
     id: uuid('id').primaryKey().defaultRandom(),
