@@ -70,7 +70,11 @@ export const auth = betterAuth({
         },
     },
     baseURL: BETTER_AUTH_URL,
-    trustedOrigins: CORS_ORIGINS,
+    trustedOrigins: [
+        ...CORS_ORIGINS,
+        'https://financial-planner-web.onrender.com', // Force add production frontend
+        'https://financial-planner-api.onrender.com', // Trust self
+    ],
 });
 
 export type Session = typeof auth.$Infer.Session;
