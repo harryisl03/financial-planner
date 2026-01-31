@@ -60,7 +60,10 @@ export const auth = betterAuth({
     logger: {
         level: "debug",
     },
-    baseURL: process.env.BETTER_AUTH_URL || "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth",
+    baseURL: (() => {
+        const url = process.env.BETTER_AUTH_URL || "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth";
+        return url.endsWith('/api/auth') ? url : `${url}/api/auth`;
+    })(),
     trustedOrigins: [
         'http://localhost:5173',
         'https://waterish-unephemerally-daysi.ngrok-free.dev',

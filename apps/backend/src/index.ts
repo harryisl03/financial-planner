@@ -45,9 +45,6 @@ app.use(
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     })
 );
-app.use(express.json());
-app.use(compression());
-
 // Legacy client fix: Rewrite malformed TOTP URL
 app.use((req, res, next) => {
     if (req.url.includes('/verify-t-o-t-p')) {
@@ -56,8 +53,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// Better Auth handler (handles /api/auth/* routes)
+// Better Auth handler (must be before express.json() to handle body stream correctly)
 app.all('/api/auth/*', toNodeHandler(auth));
+
+app.use(express.json());
+app.use(compression());
 
 // API routes
 // app.use('/api/auth', authRoutes); // Handled by Better Auth
