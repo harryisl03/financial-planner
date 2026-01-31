@@ -40,6 +40,19 @@ import { PORT, FRONTEND_URL, CORS_ORIGINS, BETTER_AUTH_URL } from './config.js';
 // Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
 app.set('trust proxy', true);
 
+// DEBUG MIDDLEWARE: Log Auth Requests to debug state mismatch
+app.use('/api/auth', (req, res, next) => {
+    console.log(`\n🔒 AUTH REQUEST: ${req.method} ${req.url}`);
+    console.log(`   Headers: origin=${req.headers.origin}, referer=${req.headers.referer}`);
+    console.log(`   X-Forwarded-Proto: ${req.headers['x-forwarded-proto']}`);
+    console.log(`   Secure: ${req.secure}, Protocol: ${req.protocol}`);
+    console.log(`   Cookies: ${req.headers.cookie ? '✅ Present' : '❌ MISSING'}`);
+    if (req.headers.cookie) {
+        console.log(`   Cookie Keys: ${req.headers.cookie.split(';').map(c => c.split('=')[0].trim()).join(', ')}`);
+    }
+    next();
+});
+
 app.use(
     cors({
         origin: (origin, callback) => {
