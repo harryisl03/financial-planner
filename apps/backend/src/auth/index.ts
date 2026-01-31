@@ -6,6 +6,38 @@ import { eq } from 'drizzle-orm';
 
 import { twoFactor } from 'better-auth/plugins';
 
+// Validate environment variables strictly
+console.log('[Auth Init] Checking environment variables...');
+
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const appleClientId = process.env.APPLE_CLIENT_ID;
+const appleClientSecret = process.env.APPLE_CLIENT_SECRET;
+
+const socialProviders: any = {};
+
+if (googleClientId && googleClientSecret) {
+    console.log('[Auth Init] Google Provider: ENABLED ✅');
+    socialProviders.google = {
+        clientId: googleClientId,
+        clientSecret: googleClientSecret,
+    };
+} else {
+    console.warn('[Auth Init] Google Provider: DISABLED ❌ (Missing Client ID or Secret)');
+}
+
+if (appleClientId && appleClientSecret) {
+    console.log('[Auth Init] Apple Provider: ENABLED ✅');
+    socialProviders.apple = {
+        clientId: appleClientId,
+        clientSecret: appleClientSecret,
+    };
+} else {
+    console.log('[Auth Init] Apple Provider: DISABLED (Optional)');
+}
+
+console.log('[Auth Init] Final Social Providers Config:', Object.keys(socialProviders));
+
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
         provider: 'pg',
@@ -21,25 +53,13 @@ export const auth = betterAuth({
         enabled: true,
         autoSignIn: true,
     },
-    // Automatically link accounts if email matches (e.g. Email/Pass -> Google)
     account: {
         accountLinking: {
             enabled: true,
             trustedProviders: ['google', 'apple'],
         },
     },
-    socialProviders: {
-        google: {
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-            enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-        },
-        apple: {
-            clientId: process.env.APPLE_CLIENT_ID as string,
-            clientSecret: process.env.APPLE_CLIENT_SECRET as string,
-            enabled: !!(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
-        },
-    },
+    socialProviders: socialProviders,
     plugins: [
         twoFactor({
             issuer: 'FinDash',
@@ -69,7 +89,6 @@ export const auth = betterAuth({
     trustedOrigins: [
         'http://localhost:5173',
         'https://waterish-unephemerally-daysi.ngrok-free.dev',
-        // Also allow without protocol just in case, or http version
         'http://waterish-unephemerally-daysi.ngrok-free.dev',
         process.env.FRONTEND_URL || 'http://localhost:5173'
     ],
