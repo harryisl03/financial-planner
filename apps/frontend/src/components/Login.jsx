@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authClient, getSession } from '../lib/auth-client';
 import BackendStatusChecker from './BackendStatusChecker';
@@ -40,6 +40,14 @@ export default function Login() {
     const { signIn, signUp, signInWithGoogle, signInWithApple, twoFactor } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const error = searchParams.get('error');
+        if (error) {
+            navigate(`/auth-error?error=${error}&error_description=${searchParams.get('error_description') || ''}`, { replace: true });
+        }
+    }, [searchParams, navigate]);
 
     const from = location.state?.from?.pathname || '/';
 

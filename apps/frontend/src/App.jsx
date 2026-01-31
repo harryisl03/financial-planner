@@ -9,6 +9,8 @@ import Statistics from './components/Statistics';
 import Transactions from './components/Transactions';
 import Settings from './components/Settings';
 import Login from './components/Login';
+import AuthError from './components/AuthError';
+
 import Billing from './components/Billing';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -19,6 +21,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/auth-error" element={<AuthError />} />
                 <Route path="/" element={
                     <ProtectedRoute>
                         <Layout>
