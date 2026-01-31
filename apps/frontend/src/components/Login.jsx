@@ -222,8 +222,22 @@ export default function Login() {
 
                 {/* Auth Card */}
                 <div className="glass-card relative w-full rounded-[24px] p-6 sm:p-8 md:p-10 flex flex-col gap-6 dark:bg-slate-900/80 bg-white/80 border border-slate-200 dark:border-white/10 shadow-2xl dark:shadow-none transition-all duration-300">
+
                     {/* 1. App Logo */}
                     <div className="flex flex-col items-center justify-center">
+                        {/* CONFIG CHECK ALERT */}
+                        {(!import.meta.env.VITE_API_URL && import.meta.env.PROD) && (
+                            <div className="w-full bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-4 text-center">
+                                <p className="font-bold text-red-500 text-sm">⚠️ CONFIGURATION ERROR</p>
+                                <p className="text-red-400 text-xs mt-1">
+                                    Backend URL (VITE_API_URL) is missing.
+                                </p>
+                                <p className="text-slate-400 text-xs mt-2">
+                                    Please set <b>VITE_API_URL</b> in Render Frontend Environment and <b>Redeploy</b>.
+                                </p>
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-primary flex items-center justify-center shadow-lg shadow-emerald-500/20 dark:shadow-primary/20">
                                 <span className="material-symbols-outlined text-white dark:text-slate-900 text-xl font-bold">account_balance_wallet</span>
