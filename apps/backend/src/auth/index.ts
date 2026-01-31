@@ -30,21 +30,13 @@ export const auth = betterAuth({
     },
     socialProviders: {
         google: {
-            clientId: process.env.GOOGLE_CLIENT_ID || 'disabled',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'disabled',
+            clientId: process.env.GOOGLE_CLIENT_ID as string,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-            mapProfileToUser: (profile: any) => {
-                return {
-                    name: profile.name || profile.given_name || 'User',
-                    email: profile.email,
-                    image: profile.picture,
-                    emailVerified: profile.email_verified || false,
-                };
-            },
         },
         apple: {
-            clientId: process.env.APPLE_CLIENT_ID || 'disabled',
-            clientSecret: process.env.APPLE_CLIENT_SECRET || 'disabled',
+            clientId: process.env.APPLE_CLIENT_ID as string,
+            clientSecret: process.env.APPLE_CLIENT_SECRET as string,
             enabled: !!(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
         },
     },
@@ -70,7 +62,9 @@ export const auth = betterAuth({
     },
     baseURL: (() => {
         const url = process.env.BETTER_AUTH_URL || "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth";
-        return url.endsWith('/api/auth') ? url : `${url}/api/auth`;
+        const finalUrl = url.endsWith('/api/auth') ? url : `${url}/api/auth`;
+        console.log(`[Better Auth] Computed baseURL: ${finalUrl}`);
+        return finalUrl;
     })(),
     trustedOrigins: [
         'http://localhost:5173',
