@@ -14,199 +14,79 @@ export default function Login() {
     const [twoFactorStep, setTwoFactorStep] = useState(false);
     const [twoFactorCode, setTwoFactorCode] = useState('');
     const [isBackupCode, setIsBackupCode] = useState(false);
-    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
 
-    const { signIn, signUp, signInWithGoogle, signInWithApple, twoFactor } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
+    // ... inside component ...
 
-    const from = location.state?.from?.pathname || '/';
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            if (isLogin) {
-                const result = await signIn(email, password);
-
-                // Check for 2FA requirement
-                if (result?.error?.code === "TWO_FACTOR_REQUIRED" || result?.twoFactorRedirect) {
-                    setTwoFactorStep(true);
-                    setLoading(false);
-                    return;
-                }
-
-                if (result?.error) {
-                    setError(result.error.message || 'Failed to sign in');
-                } else {
-                    // Force session refresh before navigation to prevent race condition
-                    await getSession();
-                    navigate(from, { replace: true });
-                }
-            } else {
-                const result = await signUp(email, password, name);
-                if (!acceptedTerms) {
-                    setError('Please accept the Terms of Service and Privacy Policy to create an account.');
-                    setLoading(false);
-                    return;
-                }
-                if (result?.error) {
-                    setError(result.error.message || 'Failed to create account');
-                } else {
-                    navigate(from, { replace: true });
-                }
-            }
-        } catch (err) {
-            console.error("Login Error:", err);
-            // Fallback error handling
-            if (err.message && (err.message.includes('401') || err.message.includes('Unauthorized') || err.message.includes('Invalid email or password'))) {
-                setError(
-                    <span>
-                        Invalid email or password. <br />
-                        <span className="text-xs opacity-75">If you normally use Google, please login with Google.</span>
-                    </span>
-                );
-            } else {
-                setError(err.message || 'An error occurred. Please try again.');
-            }
-        } finally {
-            if (!twoFactorStep) setLoading(false);
-        }
-    };
-
-    const handleTwoFactorSubmit = async (e) => {
+    const handleForgotPassword = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
-            let res;
-            if (isBackupCode) {
-                res = await twoFactor.verifyBackupCode({
-                    code: twoFactorCode,
-                    trustDevice: true
-                });
-            } else {
-                res = await twoFactor.verifyTOTP({
-                    code: twoFactorCode,
-                    trustDevice: true
-                });
-            }
-
-            if (res?.error) {
-                throw new Error(res.error.message || 'Invalid code');
-            }
-
-            await getSession(); // Refresh session to ensure user is fully authenticated
-            navigate(from, { replace: true });
+            await authClient.forgetPassword({
+                email,
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            alert('If an account exists with this email, a password reset link has been sent.');
+            setIsForgotPassword(false);
         } catch (err) {
-            setError(err.message || 'Verification failed');
+            setError(err.message || 'Failed to send reset email');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleGoogleLogin = async () => {
-        setError('');
-        try {
-            await signInWithGoogle();
-        } catch (err) {
-            setError(err.message || 'Failed to sign in with Google');
-        }
-    };
+    // ... inside render ...
 
-    const handleAppleLogin = async () => {
-        setError('');
-        try {
-            await signInWithApple();
-        } catch (err) {
-            setError(err.message || 'Failed to sign in with Apple');
-        }
-    };
-
-    if (twoFactorStep) {
+    if (isForgotPassword) {
         return (
-            <div className="bg-background-dark min-h-screen flex items-center justify-center p-4 font-display">
+            <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex items-center justify-center p-4 font-display transition-colors duration-300 overflow-hidden">
                 <div className="relative w-full max-w-md">
                     <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none"></div>
-                    <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                    <div className="glass-card relative w-full rounded-[24px] p-6 sm:p-8 flex flex-col gap-6 dark:bg-slate-900/80 bg-white/80 border border-slate-200 dark:border-white/10 shadow-2xl">
 
-                    <div className="glass-card relative w-full rounded-[24px] p-8 md:p-10 flex flex-col gap-6" style={{
-                        background: 'rgba(30, 41, 59, 0.8)',
-                        backdropFilter: 'blur(16px)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
-                    }}>
                         <div className="flex flex-col items-center justify-center">
                             <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mb-4 border border-white/10">
-                                <span className="material-symbols-outlined text-primary text-2xl">
-                                    {isBackupCode ? 'dataset' : 'phonelink_lock'}
-                                </span>
+                                <span className="material-symbols-outlined text-primary text-2xl">lock_reset</span>
                             </div>
-                            <h1 className="text-white tracking-tight text-2xl font-bold mb-2">
-                                {isBackupCode ? 'Backup Code' : 'Two-Factor Authentication'}
-                            </h1>
-                            <p className="text-slate-400 text-sm text-center">
-                                {isBackupCode
-                                    ? 'Enter one of your 8-character backup codes.'
-                                    : 'Enter the 6-digit code from your authenticator app.'}
+                            <h1 className="text-slate-900 dark:text-white tracking-tight text-2xl font-bold mb-2">Reset Password</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
+                                Enter your email address and we'll send you a link to reset your password.
                             </p>
                         </div>
 
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm text-center">
-                                {error}
-                            </div>
+                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm text-center">{error}</div>
                         )}
 
-                        <form className="flex flex-col gap-4" onSubmit={handleTwoFactorSubmit}>
+                        <form className="flex flex-col gap-4" onSubmit={handleForgotPassword}>
                             <div className="space-y-2">
+                                <label className="text-slate-600 dark:text-slate-300 text-sm font-medium ml-1" htmlFor="reset-email">Email</label>
                                 <input
-                                    className={`block w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-emerald-500 dark:focus:border-primary focus:ring-1 focus:ring-emerald-500 dark:focus:ring-primary focus:outline-none transition-all text-sm font-medium text-center tracking-[0.5em] font-mono text-xl uppercase`}
-                                    placeholder={isBackupCode ? "XXXXXXXX" : "000 000"}
-                                    type="text"
-                                    value={twoFactorCode}
-                                    onChange={(e) => {
-                                        const val = e.target.value.toUpperCase(); // Backup codes usually alphanumeric/uppercase
-                                        if (isBackupCode) {
-                                            setTwoFactorCode(val.slice(0, 10)); // Limit length for backup codes (usually 8-10 chars)
-                                        } else {
-                                            setTwoFactorCode(val.replace(/\D/g, '').slice(0, 6));
-                                        }
-                                    }}
-                                    autoFocus
+                                    className="block w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 px-4 py-3.5 text-slate-900 dark:text-white focus:border-emerald-500 dark:focus:border-primary focus:ring-1 focus:ring-emerald-500 dark:focus:ring-primary focus:outline-none transition-all text-sm font-medium"
+                                    id="reset-email"
+                                    placeholder="name@example.com"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </div>
                             <button
                                 type="submit"
-                                disabled={loading || (isBackupCode ? twoFactorCode.length < 8 : twoFactorCode.length !== 6)}
-                                className="mt-2 w-full bg-gradient-to-r from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-primary hover:from-emerald-400 hover:to-cyan-400 dark:hover:from-emerald-300 dark:hover:to-cyan-300 text-white dark:text-slate-900 font-bold py-3.5 px-6 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] dark:shadow-[0_0_20px_rgba(19,236,236,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] dark:hover:shadow-[0_0_25px_rgba(19,236,236,0.5)] transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                disabled={loading}
+                                className="mt-2 w-full bg-gradient-to-r from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-primary hover:from-emerald-400 hover:to-cyan-400 text-white dark:text-slate-900 font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5"
                             >
-                                {loading ? 'Verifying...' : 'Verify'}
+                                {loading ? 'Sending...' : 'Send Reset Link'}
                             </button>
                         </form>
 
-                        <div className="flex flex-col items-center gap-2">
-                            <button
-                                onClick={() => {
-                                    setIsBackupCode(!isBackupCode);
-                                    setTwoFactorCode('');
-                                    setError('');
-                                }}
-                                className="text-emerald-500 dark:text-primary hover:text-emerald-400 dark:hover:text-emerald-300 text-sm font-medium transition-colors"
-                            >
-                                {isBackupCode ? 'Use Authenticator App' : 'Use Backup Code'}
-                            </button>
-
-                            <button
-                                onClick={() => setTwoFactorStep(false)}
-                                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
-                            >
-                                Back to Login
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => { setIsForgotPassword(false); setError(''); }}
+                            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors text-center"
+                        >
+                            Back to Login
+                        </button>
                     </div>
                 </div>
             </div>
@@ -226,8 +106,6 @@ export default function Login() {
 
                     {/* 1. App Logo */}
                     <div className="flex flex-col items-center justify-center">
-
-                        <BackendStatusChecker apiUrl={import.meta.env.VITE_API_URL} />
 
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-primary flex items-center justify-center shadow-lg shadow-emerald-500/20 dark:shadow-primary/20">
@@ -294,7 +172,13 @@ export default function Login() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between ml-1">
                                     <label className="text-slate-600 dark:text-slate-300 text-sm font-medium" htmlFor="password">Password</label>
-                                    <a className="text-xs text-emerald-600 dark:text-primary hover:text-emerald-700 dark:hover:text-primary-dark transition-colors font-medium" href="#">Forgot Password?</a>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsForgotPassword(true)}
+                                        className="text-xs text-emerald-600 dark:text-primary hover:text-emerald-700 dark:hover:text-primary-dark transition-colors font-medium"
+                                    >
+                                        Forgot Password?
+                                    </button>
                                 </div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -474,4 +358,5 @@ export default function Login() {
             </div>
         </div>
     );
+
 }
