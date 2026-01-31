@@ -48,6 +48,20 @@ export const auth = betterAuth({
             enabled: !!(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET),
         },
     },
+    // Debug hooks to trace login flow
+    hooks: {
+        after: {
+            signIn: async (ctx) => {
+                console.log(`✅ [AUTH HOOK] Sign In Success for user:`, ctx.user?.email);
+            },
+            signUp: async (ctx) => {
+                console.log(`✅ [AUTH HOOK] Sign Up Success for user:`, ctx.user?.email);
+            },
+            createSession: async (ctx) => {
+                console.log(`✅ [AUTH HOOK] Session Created for user:`, ctx.session?.userId);
+            }
+        }
+    },
 
     plugins: [
         twoFactor({
