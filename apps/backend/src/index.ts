@@ -157,6 +157,20 @@ app.use(
     }
 );
 
+// Debug Request Protocol (To verify Trust Proxy)
+app.get('/api/debug/req', (req, res) => {
+    res.json({
+        protocol: req.protocol,
+        secure: req.secure,
+        headers: {
+            'x-forwarded-proto': req.headers['x-forwarded-proto'],
+            'host': req.headers['host'],
+            'origin': req.headers['origin']
+        },
+        trustProxyConfig: app.get('trust proxy')
+    });
+});
+
 // Start server
 async function main() {
     try {
