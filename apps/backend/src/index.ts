@@ -122,6 +122,17 @@ app.get('/', (req, res) => {
     return res.redirect(frontendUrl);
 });
 
+// Debug endpoint to check env vars via browser
+app.get('/api/debug-config', (req, res) => {
+    res.json({
+        betterAuthUrl: process.env.BETTER_AUTH_URL || '(Not Set)',
+        frontendUrl: process.env.FRONTEND_URL || '(Not Set)',
+        googleClientId: process.env.GOOGLE_CLIENT_ID ? '✅ FOUND' : '❌ MISSING',
+        googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? '✅ FOUND' : '❌ MISSING',
+        nodeEnv: process.env.NODE_ENV,
+    });
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
