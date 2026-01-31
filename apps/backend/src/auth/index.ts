@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema/index.js';
 import { eq } from 'drizzle-orm';
+import { BETTER_AUTH_URL, CORS_ORIGINS } from '../config.js';
 
 import { twoFactor } from 'better-auth/plugins';
 
@@ -68,31 +69,8 @@ export const auth = betterAuth({
             httpOnly: true,
         },
     },
-    baseURL: (() => {
-        // 1. Priority: Explicit Env Var
-        if (process.env.BETTER_AUTH_URL) {
-            const url = process.env.BETTER_AUTH_URL;
-            return url.endsWith('/api/auth') ? url : `${url}/api/auth`;
-        }
-        // 2. Fallback: Production Hardcoded (Safe Guard)
-        if (process.env.NODE_ENV === 'production') {
-            return "https://financial-planner-api.onrender.com/api/auth";
-        }
-        // 3. Fallback: Development (Ngrok or Localhost)
-        return "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth";
-    })(),
-    trustedOrigins: [
-        'http://localhost:5173',
-        'https://waterish-unephemerally-daysi.ngrok-free.dev',
-        'http://waterish-unephemerally-daysi.ngrok-free.dev',
-        // Robustly handle FRONTEND_URL or Fallback for Render
-        ...(process.env.FRONTEND_URL ? [
-            process.env.FRONTEND_URL.replace(/\/$/, ''),
-            process.env.FRONTEND_URL
-        ] : []),
-        // Always trust the standard Render Frontend URL in production as backup
-        ...(process.env.NODE_ENV === 'production' ? ['https://financial-planner-web.onrender.com'] : [])
-    ],
+    baseURL: BETTER_AUTH_URL,
+    trustedOrigins: CORS_ORIGINS,
 });
 
 export type Session = typeof auth.$Infer.Session;

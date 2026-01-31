@@ -33,23 +33,12 @@ import sessionRoutes from './routes/session.routes.js';
 const app = express();
 
 
-const PORT = process.env.PORT || 3001;
+import { PORT, FRONTEND_URL, CORS_ORIGINS, BETTER_AUTH_URL } from './config.js';
 
-// Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
+const app = express();
+
 // Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
 app.set('trust proxy', true);
-
-// Force restart for changes to take effect
-// Middleware
-// Helper to normalize URLs (remove trailing slash)
-const normalizeUrl = (url: string) => url.replace(/\/$/, '');
-
-const CORS_ORIGINS = [
-    'http://localhost:5173',
-    'https://waterish-unephemerally-daysi.ngrok-free.dev',
-    // Dynamic production origin
-    process.env.FRONTEND_URL ? normalizeUrl(process.env.FRONTEND_URL) : 'http://localhost:5173'
-];
 
 app.use(
     cors({
@@ -57,13 +46,13 @@ app.use(
             // Allow requests with no origin (like mobile apps or curl requests)
             if (!origin) return callback(null, true);
 
-            // Check if origin matches any allowed origin (ignoring usage of vs absence of trailing slash just in case)
-            const normalizedOrigin = normalizeUrl(origin);
-            const isAllowed = CORS_ORIGINS.some(allowed => normalizeUrl(allowed) === normalizedOrigin);
+            // Check if origin matches any allowed origin
+            const isAllowed = CORS_ORIGINS.includes(origin) || CORS_ORIGINS.some(allowed => origin === allowed); // Simple check
 
             if (isAllowed) {
                 callback(null, true);
             } else {
+                // In development, be more lenient or log warning
                 console.warn(`⚠️ Blocked by CORS: ${origin}`);
                 callback(new Error('Not allowed by CORS'));
             }
@@ -102,14 +91,14 @@ app.use('/api/alerts', alertsRouter);
 app.use('/api/bills', billsRouter);
 
 // Root route: Redirect to frontend (handling auth errors that redirect here)
+// Root route: Redirect to frontend (handling auth errors that redirect here)
 app.get('/', (req, res) => {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     // If query contains error, pass it to frontend
     if (Object.keys(req.query).length > 0) {
         const queryString = new URLSearchParams(req.query as any).toString();
-        return res.redirect(`${frontendUrl}?${queryString}`);
+        return res.redirect(`${FRONTEND_URL}?${queryString}`);
     }
-    return res.redirect(frontendUrl);
+    return res.redirect(FRONTEND_URL);
 });
 
 
@@ -224,7 +213,8 @@ async function main() {
         app.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
             console.log(`📖 API docs: http://localhost:${PORT}/api`);
-            console.log(`🔐 Auth: http://localhost:${PORT}/api/auth`);
+            console.log(`🔐 Auth: ${BETTER_AUTH_URL}`);
+            console.log(`🌍 Frontend: ${FRONTEND_URL}`);
         });
     } catch (error) {
         console.error('Failed to start server:', error);
