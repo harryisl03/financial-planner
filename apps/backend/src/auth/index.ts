@@ -63,10 +63,12 @@ export const auth = betterAuth({
         level: "debug",
     },
     advanced: {
-        defaultCookieAttributes: {
-            secure: true,
-            sameSite: "none",
-            httpOnly: true,
+        advanced: {
+            defaultCookieAttributes: {
+                secure: false, // DEBUG: Temporarily disable secure
+                sameSite: "lax", // DEBUG: Relax to lax (required if secure is false)
+                httpOnly: true,
+            },
         },
     },
     baseURL: BETTER_AUTH_URL,
