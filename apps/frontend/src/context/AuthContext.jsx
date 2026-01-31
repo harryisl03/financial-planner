@@ -9,15 +9,6 @@ export function AuthProvider({ children }) {
     const user = data?.user;
     const session = data?.session;
 
-    React.useEffect(() => {
-        console.log('[AuthContext] Session State:', {
-            isLoading: isPending,
-            hasUser: !!user,
-            hasSession: !!session,
-            error
-        });
-    }, [isPending, user, session, error]);
-
     const value = {
         user: user ?? null,
         session: session ?? null,

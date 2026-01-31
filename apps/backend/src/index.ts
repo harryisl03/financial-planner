@@ -58,103 +58,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// --- DEBUG MIDDLEWARE: LOG SET-COOKIE HEADERS ---
-app.use((req, res, next) => {
-    // Intercept response to log cookies being set
-    const originalSetHeader = res.setHeader;
-    res.setHeader = function (name, value) {
-        if (name.toLowerCase() === 'set-cookie') {
-            console.log(`\n🍪 [Set-Cookie Debug] ${req.url}`);
-            console.log('Value:', JSON.stringify(value));
-            console.log('------------------------------------');
-        }
-        return originalSetHeader.apply(this, [name, value] as any);
-    };
-    next();
-});
-
-// --- DEBUG MIDDLEWARE FOR AUTH CALLBACK ---
-app.use('/api/auth/callback', (req, res, next) => {
-    console.log('\n🔍 [Auth Callback Debug]');
-    console.log('URL:', req.originalUrl);
-    console.log('Protocol:', req.protocol);
-    console.log('Secure (req.secure):', req.secure);
-    console.log('X-Forwarded-Proto:', req.headers['x-forwarded-proto']);
-    console.log('Cookie Size:', req.headers.cookie ? req.headers.cookie.length : 0);
-    // Be careful not to log sensitive tokens, just check existence
-    console.log('Cookies present:', req.headers.cookie ? 'YES' : 'NO');
-    if (req.headers.cookie) {
-        console.log('Cookie Names:', req.headers.cookie.split(';').map(c => c.trim().split('=')[0]).join(', '));
-    }
-    console.log('------------------------------------\n');
-    next();
-});
-
-app.use(express.urlencoded({ extended: true })); // Parse Form Data FIRST
-
-// --- MIDDLEWARE SHIM: Convert Form POST to JSON for Social Login ---
-// Better Auth only accepts JSON, but we must use Form POST to get first-party cookies.
-// This middleware intercepts the form data and "tricks" Better Auth into thinking it's JSON.
-// AND it intercepts the response to perform a real redirect instead of sending JSON back.
-app.use((req, res, next) => {
-    // Relaxed check: Run for ALL social sign-in POSTs to be safe
-    if (req.path.includes('/sign-in/social') && req.method === 'POST') {
-        console.log(`🔄 [Auth Shim] Active for: ${req.path}`);
-
-        // Only convert content-type if it's form-encoded (don't break if it's already JSON)
-        if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
-            console.log('🔄 [Auth Shim] Converting Content-Type to application/json');
-            req.headers['content-type'] = 'application/json';
-        }
-
-        // Response Interceptor with Buffering
-        const originalWrite = res.write;
-        const originalEnd = res.end;
-        let chunks: any[] = [];
-
-        res.write = function (chunk: any, ...args: any[]) {
-            if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-            // Don't call originalWrite yet, wait for end
-            return true;
-        };
-
-        res.end = function (chunk: any, ...args: any[]) {
-            if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-
-            try {
-                const bodyStr = Buffer.concat(chunks).toString('utf8');
-                console.log('🔄 [Auth Shim] Captured Body:', bodyStr);
-
-                // Check for JSON redirect
-                if (bodyStr.trim().startsWith('{')) {
-                    const body = JSON.parse(bodyStr);
-                    if (body && body.url) { // Redirect if URL is present (Better Auth v1.1)
-                        console.log('🔄 [Auth Shim] Forcing REDIRECT to:', body.url);
-
-                        // Restore methods just in case redirect uses them?
-                        // Express res.redirect uses res.header and res.end.
-                        res.write = originalWrite;
-                        res.end = originalEnd;
-
-                        return res.redirect(body.url);
-                    }
-                }
-
-                // If not trapping, flush original content
-                chunks.forEach(c => originalWrite.call(res, c));
-                return originalEnd.call(res, undefined, ...args); // chunks already processed
-            } catch (e) {
-                console.error('🔄 [Auth Shim] Error in interceptor:', e);
-                // Fallback flush
-                chunks.forEach(c => originalWrite.call(res, c));
-                return originalEnd.apply(res, [undefined, ...args]);
-            }
-        } as any;
-    }
-    next();
-});
-
-// Better Auth handler (must be before express.json() but AFTER urlencoded if we want to shim it)
+// Better Auth handler (must be before express.json() to handle body stream correctly)
 app.all('/api/auth/*', toNodeHandler(auth));
 
 app.use(express.json());
@@ -184,17 +88,6 @@ app.get('/', (req, res) => {
         return res.redirect(`${frontendUrl}?${queryString}`);
     }
     return res.redirect(frontendUrl);
-});
-
-// Debug endpoint to check env vars via browser
-app.get('/api/debug-config', (req, res) => {
-    res.json({
-        betterAuthUrl: process.env.BETTER_AUTH_URL || '(Not Set)',
-        frontendUrl: process.env.FRONTEND_URL || '(Not Set)',
-        googleClientId: process.env.GOOGLE_CLIENT_ID ? '✅ FOUND' : '❌ MISSING',
-        googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? '✅ FOUND' : '❌ MISSING',
-        nodeEnv: process.env.NODE_ENV,
-    });
 });
 
 // Health check
