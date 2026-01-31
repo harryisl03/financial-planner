@@ -102,14 +102,31 @@ app.use((req, res, next) => {
         req.headers['content-type'] = 'application/json'; // Lie to Better Auth
 
         // Intercept Response to auto-redirect
-        const originalJson = res.json;
-        res.json = function (this: express.Response, body: any) {
-            console.log('🔄 [Auth Shim] Intercepted Response:', JSON.stringify(body));
-            if (body && body.url) { // Better Auth v1.1 returns { url, redirect: true } or just { url }
-                console.log('🔄 [Auth Shim] Performing Server-Side Redirect to:', body.url);
-                return res.redirect(body.url);
+        const originalEnd = res.end;
+        res.end = function (chunk: any, encoding?: any, cb?: any) {
+            // Normalize arguments
+            if (typeof chunk === 'function') { cb = chunk; chunk = null; encoding = null; }
+            if (typeof encoding === 'function') { cb = encoding; encoding = null; }
+
+            if (chunk) {
+                try {
+                    const bodyStr = chunk.toString();
+                    // Check if it looks like JSON
+                    if (bodyStr.trim().startsWith('{')) {
+                        const body = JSON.parse(bodyStr);
+                        if (body && body.url && body.redirect) {
+                            console.log('🔄 [Auth Shim] Trapped JSON response, forcing REDIRECT to:', body.url);
+                            // Restore original endpoint to allow redirect to work properly or just redirect
+                            res.end = originalEnd;
+                            return res.redirect(body.url);
+                        }
+                    }
+                } catch (e) {
+                    // ignore parse error
+                }
             }
-            return originalJson.call(this, body);
+
+            return originalEnd.call(this, chunk, encoding, cb);
         } as any;
     }
     next();
