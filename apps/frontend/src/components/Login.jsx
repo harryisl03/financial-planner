@@ -106,15 +106,41 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = () => {
         setError('');
         try {
-            // Reverting to standard flow now that CHIPS/Partitioned cookies are enabled on backend.
-            // This sends a POST request, which is what the server expects.
-            await signInWithGoogle();
+            // "Form POST Navigation" Strategy
+            // We create a standard HTML form and submit it.
+            // This treats the request as a Top-Level Navigation (not XHR), 
+            // allowing the Backend to set First-Party cookies successfully on Render.
+
+            const backendUrl = import.meta.env.VITE_API_URL || "https://financial-planner-api.onrender.com";
+            const callbackUrl = window.location.origin;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `${backendUrl}/api/auth/sign-in/social`;
+
+            const providerInput = document.createElement('input');
+            providerInput.type = 'hidden';
+            providerInput.name = 'provider';
+            providerInput.value = 'google';
+
+            const callbackInput = document.createElement('input');
+            callbackInput.type = 'hidden';
+            callbackInput.name = 'callbackURL';
+            callbackInput.value = callbackUrl;
+
+            form.appendChild(providerInput);
+            form.appendChild(callbackInput);
+            document.body.appendChild(form);
+
+            setLoading(true); // Show spinner while redirecting
+            form.submit();
         } catch (err) {
-            console.error("Google Login Error:", err);
-            setError(err.message || 'Failed to sign in with Google');
+            console.error("Google Login Setup Error:", err);
+            setError('Failed to initiate login redirect.');
+            setLoading(false);
         }
     };
 

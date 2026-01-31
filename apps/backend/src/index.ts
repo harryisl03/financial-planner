@@ -93,6 +93,7 @@ app.use('/api/auth/callback', (req, res, next) => {
 // Better Auth handler (must be before express.json() to handle body stream correctly)
 app.all('/api/auth/*', toNodeHandler(auth));
 
+app.use(express.urlencoded({ extended: true })); // Allow standard form posts (for social login workaround)
 app.use(express.json());
 app.use(compression());
 
