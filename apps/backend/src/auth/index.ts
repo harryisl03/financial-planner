@@ -60,6 +60,13 @@ export const auth = betterAuth({
     logger: {
         level: "debug",
     },
+    advanced: {
+        defaultCookieAttributes: {
+            secure: true,
+            sameSite: "none",
+            httpOnly: true,
+        },
+    },
     baseURL: (() => {
         const url = process.env.BETTER_AUTH_URL || "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth";
         return url.endsWith('/api/auth') ? url : `${url}/api/auth`;
