@@ -65,7 +65,8 @@ export const auth = betterAuth({
         'http://localhost:5173',
         'https://waterish-unephemerally-daysi.ngrok-free.dev',
         // Also allow without protocol just in case, or http version
-        'http://waterish-unephemerally-daysi.ngrok-free.dev'
+        'http://waterish-unephemerally-daysi.ngrok-free.dev',
+        process.env.FRONTEND_URL || 'http://localhost:5173'
     ],
 });
 
