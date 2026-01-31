@@ -30,7 +30,7 @@ import billsRouter from './routes/bills.routes.js';
 import sessionRoutes from './routes/session.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+
 
 const PORT = process.env.PORT || 3001;
 
