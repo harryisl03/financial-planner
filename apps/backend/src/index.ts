@@ -39,13 +39,33 @@ app.set('trust proxy', 1);
 
 // Force restart for changes to take effect
 // Middleware
+// Helper to normalize URLs (remove trailing slash)
+const normalizeUrl = (url: string) => url.replace(/\/$/, '');
+
+const CORS_ORIGINS = [
+    'http://localhost:5173',
+    'https://waterish-unephemerally-daysi.ngrok-free.dev',
+    // Dynamic production origin
+    process.env.FRONTEND_URL ? normalizeUrl(process.env.FRONTEND_URL) : 'http://localhost:5173'
+];
+
 app.use(
     cors({
-        origin: [
-            'http://localhost:5173',
-            'https://waterish-unephemerally-daysi.ngrok-free.dev',
-            process.env.FRONTEND_URL || 'http://localhost:5173'
-        ],
+        origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) return callback(null, true);
+
+            // Check if origin matches any allowed origin (ignoring usage of vs absence of trailing slash just in case)
+            const normalizedOrigin = normalizeUrl(origin);
+            const isAllowed = CORS_ORIGINS.some(allowed => normalizeUrl(allowed) === normalizedOrigin);
+
+            if (isAllowed) {
+                callback(null, true);
+            } else {
+                console.warn(`⚠️ Blocked by CORS: ${origin}`);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     })

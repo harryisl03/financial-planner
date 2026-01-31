@@ -77,7 +77,11 @@ export const auth = betterAuth({
         'https://waterish-unephemerally-daysi.ngrok-free.dev',
         // Also allow without protocol just in case, or http version
         'http://waterish-unephemerally-daysi.ngrok-free.dev',
-        process.env.FRONTEND_URL || 'http://localhost:5173'
+        // Robustly handle FRONTEND_URL with/without slash
+        ...(process.env.FRONTEND_URL ? [
+            process.env.FRONTEND_URL.replace(/\/$/, ''),
+            process.env.FRONTEND_URL // keep original too just in case
+        ] : ['http://localhost:5173'])
     ],
 });
 
