@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SidebarProvider } from './context/SidebarContext';
 import Dashboard from './components/Dashboard';
 import Budget from './components/Budget';
 import Statistics from './components/Statistics';
