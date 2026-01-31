@@ -58,6 +58,21 @@ app.use((req, res, next) => {
     next();
 });
 
+// --- DEBUG MIDDLEWARE: LOG SET-COOKIE HEADERS ---
+app.use((req, res, next) => {
+    // Intercept response to log cookies being set
+    const originalSetHeader = res.setHeader;
+    res.setHeader = function (name, value) {
+        if (name.toLowerCase() === 'set-cookie') {
+            console.log(`\n🍪 [Set-Cookie Debug] ${req.url}`);
+            console.log('Value:', JSON.stringify(value));
+            console.log('------------------------------------');
+        }
+        return originalSetHeader.apply(this, [name, value] as any);
+    };
+    next();
+});
+
 // --- DEBUG MIDDLEWARE FOR AUTH CALLBACK ---
 app.use('/api/auth/callback', (req, res, next) => {
     console.log('\n🔍 [Auth Callback Debug]');

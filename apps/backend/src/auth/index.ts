@@ -65,6 +65,7 @@ export const auth = betterAuth({
             secure: true,
             sameSite: "none",
             httpOnly: true,
+            partitioned: true, // CHIPS support for cross-site cookies
         },
     },
     baseURL: (() => {
