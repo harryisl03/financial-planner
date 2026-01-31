@@ -69,19 +69,29 @@ export const auth = betterAuth({
         },
     },
     baseURL: (() => {
-        const url = process.env.BETTER_AUTH_URL || "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth";
-        return url.endsWith('/api/auth') ? url : `${url}/api/auth`;
+        // 1. Priority: Explicit Env Var
+        if (process.env.BETTER_AUTH_URL) {
+            const url = process.env.BETTER_AUTH_URL;
+            return url.endsWith('/api/auth') ? url : `${url}/api/auth`;
+        }
+        // 2. Fallback: Production Hardcoded (Safe Guard)
+        if (process.env.NODE_ENV === 'production') {
+            return "https://financial-planner-api.onrender.com/api/auth";
+        }
+        // 3. Fallback: Development (Ngrok or Localhost)
+        return "https://waterish-unephemerally-daysi.ngrok-free.dev/api/auth";
     })(),
     trustedOrigins: [
         'http://localhost:5173',
         'https://waterish-unephemerally-daysi.ngrok-free.dev',
-        // Also allow without protocol just in case, or http version
         'http://waterish-unephemerally-daysi.ngrok-free.dev',
-        // Robustly handle FRONTEND_URL with/without slash
+        // Robustly handle FRONTEND_URL or Fallback for Render
         ...(process.env.FRONTEND_URL ? [
             process.env.FRONTEND_URL.replace(/\/$/, ''),
-            process.env.FRONTEND_URL // keep original too just in case
-        ] : ['http://localhost:5173'])
+            process.env.FRONTEND_URL
+        ] : []),
+        // Always trust the standard Render Frontend URL in production as backup
+        ...(process.env.NODE_ENV === 'production' ? ['https://financial-planner-web.onrender.com'] : [])
     ],
 });
 
