@@ -35,7 +35,7 @@ const app = express();
 
 import { PORT, FRONTEND_URL, CORS_ORIGINS, BETTER_AUTH_URL } from './config.js';
 
-const app = express();
+
 
 // Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
 app.set('trust proxy', true);
