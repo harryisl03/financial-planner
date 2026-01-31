@@ -103,7 +103,7 @@ app.use((req, res, next) => {
 
         // Intercept Response to auto-redirect
         const originalJson = res.json;
-        res.json = function (body) {
+        res.json = function (this: express.Response, body: any) {
             console.log('🔄 [Auth Shim] Intercepted Response:', JSON.stringify(body));
             if (body && body.url) { // Better Auth v1.1 returns { url, redirect: true } or just { url }
                 console.log('🔄 [Auth Shim] Performing Server-Side Redirect to:', body.url);
