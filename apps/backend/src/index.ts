@@ -58,6 +58,23 @@ app.use((req, res, next) => {
     next();
 });
 
+// --- DEBUG MIDDLEWARE FOR AUTH CALLBACK ---
+app.use('/api/auth/callback', (req, res, next) => {
+    console.log('\n🔍 [Auth Callback Debug]');
+    console.log('URL:', req.originalUrl);
+    console.log('Protocol:', req.protocol);
+    console.log('Secure (req.secure):', req.secure);
+    console.log('X-Forwarded-Proto:', req.headers['x-forwarded-proto']);
+    console.log('Cookie Size:', req.headers.cookie ? req.headers.cookie.length : 0);
+    // Be careful not to log sensitive tokens, just check existence
+    console.log('Cookies present:', req.headers.cookie ? 'YES' : 'NO');
+    if (req.headers.cookie) {
+        console.log('Cookie Names:', req.headers.cookie.split(';').map(c => c.trim().split('=')[0]).join(', '));
+    }
+    console.log('------------------------------------\n');
+    next();
+});
+
 // Better Auth handler (must be before express.json() to handle body stream correctly)
 app.all('/api/auth/*', toNodeHandler(auth));
 
