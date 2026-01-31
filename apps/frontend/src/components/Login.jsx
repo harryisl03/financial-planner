@@ -225,18 +225,21 @@ export default function Login() {
 
                     {/* 1. App Logo */}
                     <div className="flex flex-col items-center justify-center">
-                        {/* CONFIG CHECK ALERT */}
-                        {(!import.meta.env.VITE_API_URL && import.meta.env.PROD) && (
-                            <div className="w-full bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-4 text-center">
-                                <p className="font-bold text-red-500 text-sm">⚠️ CONFIGURATION ERROR</p>
-                                <p className="text-red-400 text-xs mt-1">
-                                    Backend URL (VITE_API_URL) is missing.
-                                </p>
-                                <p className="text-slate-400 text-xs mt-2">
-                                    Please set <b>VITE_API_URL</b> in Render Frontend Environment and <b>Redeploy</b>.
-                                </p>
-                            </div>
-                        )}
+
+                        {/* DIAGNOSTIC PANEL */}
+                        <div className="w-full mb-4 p-3 bg-slate-100 dark:bg-slate-900/50 rounded-lg text-xs font-mono border border-slate-200 dark:border-slate-700">
+                            <p className="flex justify-between items-center mb-1">
+                                <span className="text-slate-500">API URL:</span>
+                                <span className={`font-bold ${import.meta.env.VITE_API_URL?.startsWith('https') ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                    {import.meta.env.VITE_API_URL || '(Undefined)'}
+                                </span>
+                            </p>
+                            <p className="text-center text-[10px] text-slate-400 mt-1">
+                                {import.meta.env.VITE_API_URL?.startsWith('https')
+                                    ? '✅ HTTPS Secure'
+                                    : '⚠️ HTTP (Cookies may fail)'}
+                            </p>
+                        </div>
 
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 dark:from-emerald-400 dark:to-primary flex items-center justify-center shadow-lg shadow-emerald-500/20 dark:shadow-primary/20">
