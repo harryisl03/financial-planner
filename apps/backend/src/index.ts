@@ -101,6 +101,15 @@ async function main() {
         // Seed default categories
         await seedSystemCategories();
 
+        // --- DEBUG AUTH CONFIG ---
+        console.log('\n🔍 --- AUTH CONFIGURATION CHECK ---');
+        console.log('BETTER_AUTH_URL:', process.env.BETTER_AUTH_URL || '(Not Set)');
+        console.log('FRONTEND_URL:', process.env.FRONTEND_URL || '(Not Set)');
+        console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? '✅ Found' : '❌ MISSING (Social Login will be disabled)');
+        console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? '✅ Found' : '❌ MISSING');
+        console.log('------------------------------------\n');
+
+
         // Run migrations programmatically
         console.log('📦 Starting database migration process...');
         console.log('Current working directory:', process.cwd());
