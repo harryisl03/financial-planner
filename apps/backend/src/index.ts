@@ -95,10 +95,22 @@ app.use(express.urlencoded({ extended: true })); // Parse Form Data FIRST
 // --- MIDDLEWARE SHIM: Convert Form POST to JSON for Social Login ---
 // Better Auth only accepts JSON, but we must use Form POST to get first-party cookies.
 // This middleware intercepts the form data and "tricks" Better Auth into thinking it's JSON.
+// AND it intercepts the response to perform a real redirect instead of sending JSON back.
 app.use((req, res, next) => {
     if (req.path.includes('/sign-in/social') && req.method === 'POST' && req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
-        console.log('🔄 [Auth Shim] Converting Form POST to JSON for Better Auth');
+        console.log('🔄 [Auth Shim] Converting Form POST to JSON and Intercepting Redirect');
         req.headers['content-type'] = 'application/json'; // Lie to Better Auth
+
+        // Intercept Response to auto-redirect
+        const originalJson = res.json;
+        res.json = function (body) {
+            console.log('🔄 [Auth Shim] Intercepted Response:', JSON.stringify(body));
+            if (body && body.url) { // Better Auth v1.1 returns { url, redirect: true } or just { url }
+                console.log('🔄 [Auth Shim] Performing Server-Side Redirect to:', body.url);
+                return res.redirect(body.url);
+            }
+            return originalJson.call(this, body);
+        } as any;
     }
     next();
 });
