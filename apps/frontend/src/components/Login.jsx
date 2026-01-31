@@ -106,10 +106,16 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = () => {
         setError('');
         try {
-            await signInWithGoogle();
+            // Direct navigation to Backend to allow First-Party Cookie setting
+            // This bypasses 3rd-party cookie blocking in browsers
+            const backendUrl = import.meta.env.VITE_API_URL || "https://financial-planner-api.onrender.com";
+            const callbackUrl = window.location.origin;
+
+            // Construct the API URL manually
+            window.location.href = `${backendUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackUrl)}`;
         } catch (err) {
             setError(err.message || 'Failed to sign in with Google');
         }
