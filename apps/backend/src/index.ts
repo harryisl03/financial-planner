@@ -108,16 +108,41 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Database Health Check
+// Database & System Health Check
 app.get('/api/health/db', async (req, res) => {
     try {
         const start = Date.now();
+        // 1. Check basic connection
         await db.execute(sql`SELECT 1`);
+
+        // 2. Check Schema Existence (Users table)
+        let schemaStatus = 'unknown';
+        let userCount = -1;
+        try {
+            const usersResult = await db.execute(sql`SELECT count(*) as count FROM users`);
+            userCount = Number(usersResult[0].count);
+            schemaStatus = 'ok';
+        } catch (e: any) {
+            schemaStatus = `missing_table: ${e.message}`;
+        }
+
         const duration = Date.now() - start;
+
+        // 3. Env Var Check
+        const envCheck = {
+            BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ? '✅ Set' : '❌ MISSING',
+            BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || 'Using Fallback',
+            FRONTEND_URL: process.env.FRONTEND_URL || 'Using Fallback',
+            NODE_ENV: process.env.NODE_ENV
+        };
+
         res.json({
-            status: 'ok',
+            status: schemaStatus === 'ok' ? 'ok' : 'error',
             db: 'connected',
+            schema: schemaStatus,
+            userCount,
             latency: `${duration}ms`,
+            env: envCheck,
             timestamp: new Date().toISOString()
         });
     } catch (error: any) {
