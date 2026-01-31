@@ -139,7 +139,9 @@ export default function Login() {
     const handleGoogleLogin = async () => {
         setError('');
         try {
-            await signInWithGoogle();
+            await signInWithGoogle({
+                callbackURL: '/dashboard' // Explicitly redirect to dashboard after login
+            });
         } catch (err) {
             setError(err.message || 'Failed to sign in with Google');
         }

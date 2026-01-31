@@ -37,8 +37,8 @@ import { PORT, FRONTEND_URL, CORS_ORIGINS, BETTER_AUTH_URL } from './config.js';
 
 
 
-// Trust proxy is required for Render/Heroku (behind load balancer) AND for secure cookies
-app.set('trust proxy', true);
+// Trust proxy: 1 hop (Render/Heroku load balancer)
+app.set('trust proxy', 1);
 
 // DEBUG MIDDLEWARE: Log Auth Requests to debug state mismatch
 app.use('/api/auth', (req, res, next) => {
