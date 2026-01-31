@@ -79,6 +79,17 @@ app.use('/api/savings', savingsRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/bills', billsRouter);
 
+// Root route: Redirect to frontend (handling auth errors that redirect here)
+app.get('/', (req, res) => {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    // If query contains error, pass it to frontend
+    if (Object.keys(req.query).length > 0) {
+        const queryString = new URLSearchParams(req.query as any).toString();
+        return res.redirect(`${frontendUrl}?${queryString}`);
+    }
+    return res.redirect(frontendUrl);
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
