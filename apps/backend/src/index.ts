@@ -97,36 +97,58 @@ app.use(express.urlencoded({ extended: true })); // Parse Form Data FIRST
 // This middleware intercepts the form data and "tricks" Better Auth into thinking it's JSON.
 // AND it intercepts the response to perform a real redirect instead of sending JSON back.
 app.use((req, res, next) => {
-    if (req.path.includes('/sign-in/social') && req.method === 'POST' && req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
-        console.log('🔄 [Auth Shim] Converting Form POST to JSON and Intercepting Redirect');
-        req.headers['content-type'] = 'application/json'; // Lie to Better Auth
+    // Relaxed check: Run for ALL social sign-in POSTs to be safe
+    if (req.path.includes('/sign-in/social') && req.method === 'POST') {
+        console.log(`🔄 [Auth Shim] Active for: ${req.path}`);
 
-        // Intercept Response to auto-redirect
+        // Only convert content-type if it's form-encoded (don't break if it's already JSON)
+        if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
+            console.log('🔄 [Auth Shim] Converting Content-Type to application/json');
+            req.headers['content-type'] = 'application/json';
+        }
+
+        // Response Interceptor with Buffering
+        const originalWrite = res.write;
         const originalEnd = res.end;
-        res.end = function (this: any, chunk: any, encoding?: any, cb?: any) {
-            // Normalize arguments
-            if (typeof chunk === 'function') { cb = chunk; chunk = null; encoding = null; }
-            if (typeof encoding === 'function') { cb = encoding; encoding = null; }
+        let chunks: any[] = [];
 
-            if (chunk) {
-                try {
-                    const bodyStr = chunk.toString();
-                    // Check if it looks like JSON
-                    if (bodyStr.trim().startsWith('{')) {
-                        const body = JSON.parse(bodyStr);
-                        if (body && body.url && body.redirect) {
-                            console.log('🔄 [Auth Shim] Trapped JSON response, forcing REDIRECT to:', body.url);
-                            // Restore original endpoint to allow redirect to work properly or just redirect
-                            res.end = originalEnd;
-                            return res.redirect(body.url);
-                        }
+        res.write = function (chunk: any, ...args: any[]) {
+            if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+            // Don't call originalWrite yet, wait for end
+            return true;
+        };
+
+        res.end = function (chunk: any, ...args: any[]) {
+            if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+
+            try {
+                const bodyStr = Buffer.concat(chunks).toString('utf8');
+                console.log('🔄 [Auth Shim] Captured Body:', bodyStr);
+
+                // Check for JSON redirect
+                if (bodyStr.trim().startsWith('{')) {
+                    const body = JSON.parse(bodyStr);
+                    if (body && body.url) { // Redirect if URL is present (Better Auth v1.1)
+                        console.log('🔄 [Auth Shim] Forcing REDIRECT to:', body.url);
+
+                        // Restore methods just in case redirect uses them?
+                        // Express res.redirect uses res.header and res.end.
+                        res.write = originalWrite;
+                        res.end = originalEnd;
+
+                        return res.redirect(body.url);
                     }
-                } catch (e) {
-                    // ignore parse error
                 }
-            }
 
-            return originalEnd.call(this, chunk, encoding, cb);
+                // If not trapping, flush original content
+                chunks.forEach(c => originalWrite.call(res, c));
+                return originalEnd.call(res, undefined, ...args); // chunks already processed
+            } catch (e) {
+                console.error('🔄 [Auth Shim] Error in interceptor:', e);
+                // Fallback flush
+                chunks.forEach(c => originalWrite.call(res, c));
+                return originalEnd.apply(res, [undefined, ...args]);
+            }
         } as any;
     }
     next();
