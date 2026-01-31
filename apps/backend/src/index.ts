@@ -103,7 +103,7 @@ app.use((req, res, next) => {
 
         // Intercept Response to auto-redirect
         const originalEnd = res.end;
-        res.end = function (chunk: any, encoding?: any, cb?: any) {
+        res.end = function (this: any, chunk: any, encoding?: any, cb?: any) {
             // Normalize arguments
             if (typeof chunk === 'function') { cb = chunk; chunk = null; encoding = null; }
             if (typeof encoding === 'function') { cb = encoding; encoding = null; }
