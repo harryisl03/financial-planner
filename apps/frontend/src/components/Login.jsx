@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authClient } from '../lib/auth-client';
+import { authClient, getSession } from '../lib/auth-client';
 import BackendStatusChecker from './BackendStatusChecker';
 
 export default function Login() {
