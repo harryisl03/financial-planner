@@ -90,10 +90,22 @@ app.use('/api/auth/callback', (req, res, next) => {
     next();
 });
 
-// Better Auth handler (must be before express.json() to handle body stream correctly)
+app.use(express.urlencoded({ extended: true })); // Parse Form Data FIRST
+
+// --- MIDDLEWARE SHIM: Convert Form POST to JSON for Social Login ---
+// Better Auth only accepts JSON, but we must use Form POST to get first-party cookies.
+// This middleware intercepts the form data and "tricks" Better Auth into thinking it's JSON.
+app.use((req, res, next) => {
+    if (req.path.includes('/sign-in/social') && req.method === 'POST' && req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
+        console.log('🔄 [Auth Shim] Converting Form POST to JSON for Better Auth');
+        req.headers['content-type'] = 'application/json'; // Lie to Better Auth
+    }
+    next();
+});
+
+// Better Auth handler (must be before express.json() but AFTER urlencoded if we want to shim it)
 app.all('/api/auth/*', toNodeHandler(auth));
 
-app.use(express.urlencoded({ extended: true })); // Allow standard form posts (for social login workaround)
 app.use(express.json());
 app.use(compression());
 
