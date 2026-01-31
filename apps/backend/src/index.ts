@@ -7,6 +7,7 @@ import { auth } from './auth/index.js';
 import { toNodeHandler } from 'better-auth/node';
 import { seedSystemCategories } from './services/category.service.js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { sql } from 'drizzle-orm';
 import { db } from './db/index.js';
 import fs from 'fs';
 import path from 'path';
@@ -110,9 +111,34 @@ app.get('/', (req, res) => {
     return res.redirect(frontendUrl);
 });
 
+
+
 // Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Database Health Check
+app.get('/api/health/db', async (req, res) => {
+    try {
+        const start = Date.now();
+        await db.execute(sql`SELECT 1`);
+        const duration = Date.now() - start;
+        res.json({
+            status: 'ok',
+            db: 'connected',
+            latency: `${duration}ms`,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error: any) {
+        console.error('❌ Database Health Check Failed:', error);
+        res.status(500).json({
+            status: 'error',
+            db: 'disconnected',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // Error handler
