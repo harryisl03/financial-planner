@@ -72,7 +72,8 @@ export default function Login() {
                 } else {
                     // Force session refresh before navigation to prevent race condition
                     await getSession();
-                    navigate(from, { replace: true });
+                    // navigate(from, { replace: true });
+                    window.location.href = from; // Force full reload to ensure AuthContext picks up the new cookie immediately
                 }
             } else {
                 const result = await signUp(email, password, name);
