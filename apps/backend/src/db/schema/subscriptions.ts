@@ -6,7 +6,7 @@ import {
     uuid,
     decimal,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth.js';
+import { users } from './auth';
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),

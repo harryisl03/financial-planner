@@ -7,7 +7,7 @@ import {
     decimal,
     boolean,
 } from 'drizzle-orm/pg-core';
-import { users } from './auth.js';
+import { users } from './auth';
 
 export const financialAccounts = pgTable('financial_accounts', {
     id: uuid('id').primaryKey().defaultRandom(),

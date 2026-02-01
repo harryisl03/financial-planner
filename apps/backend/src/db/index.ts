@@ -30,7 +30,7 @@ const connectionString = process.env.DATABASE_URL!;
 
 // For query purposes
 const queryClient = postgres(connectionString, {
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: 'require' // Force SSL for Supabase/Neon even in dev
 });
 export const db = drizzle(queryClient, { schema });
 

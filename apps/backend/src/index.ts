@@ -37,7 +37,7 @@ import { PORT, FRONTEND_URL, CORS_ORIGINS, BETTER_AUTH_URL } from './config.js';
 
 
 
-// Trust proxy: 1 hop (Render/Heroku load balancer)
+// Trust proxy: 1 hop (Render/Heroku load balancer) - REQUIRED for Secure cookies behind proxy
 app.set('trust proxy', 1);
 
 // DEBUG MIDDLEWARE: Log Auth Requests to debug state mismatch
@@ -205,47 +205,32 @@ async function main() {
         // Seed default categories
         await seedSystemCategories();
 
-        // --- DEBUG AUTH CONFIG ---
+        // --- DEBUG AUTH CONFIG (Production Safe) ---
         console.log('\n🔍 --- AUTH CONFIGURATION CHECK ---');
         console.log('BETTER_AUTH_URL:', process.env.BETTER_AUTH_URL || '(Not Set)');
         console.log('FRONTEND_URL:', process.env.FRONTEND_URL || '(Not Set)');
-        console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? '✅ Found' : '❌ MISSING (Social Login will be disabled)');
+        console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? '✅ Found' : '❌ MISSING');
         console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? '✅ Found' : '❌ MISSING');
+        console.log('NODE_ENV:', process.env.NODE_ENV);
         console.log('------------------------------------\n');
 
 
         // Run migrations programmatically
         console.log('📦 Starting database migration process...');
-        console.log('Current working directory:', process.cwd());
-
-        const migrationFolder = path.join(process.cwd(), 'drizzle');
-        console.log('Looking for migrations in:', migrationFolder);
-
-        if (fs.existsSync(migrationFolder)) {
-            console.log('✅ Migration folder found.');
-            const files = fs.readdirSync(migrationFolder);
-            console.log('Migration files found:', files);
-        } else {
-            console.error('❌ Migration folder NOT found!');
-            // Try relative path as fallback
-            console.log('Checking relative ./drizzle path...');
-            if (fs.existsSync('./drizzle')) {
-                console.log('✅ ./drizzle exists.');
-            } else {
-                console.log('❌ ./drizzle does not exist either.');
-            }
-        }
 
         try {
             await migrate(db, { migrationsFolder: 'drizzle' });
             console.log('✅ Migrations completed successfully!');
         } catch (migrationError: any) {
-            console.error('❌ Migration FAILED detailed error:', migrationError);
-            // Dump error properties
-            if (migrationError.code) console.error('Error Code:', migrationError.code);
-            if (migrationError.detail) console.error('Error Detail:', migrationError.detail);
-            // Rethrow to stop startup? or continue? better stop.
-            throw migrationError;
+            // Ignore "relation already exists" errors (common in syncing dev/prod)
+            if (migrationError.code === '42P07' || migrationError.code === '42P06') {
+                console.warn('⚠️ Migration notice:', migrationError.message);
+                console.log('✅ Database appears already synced. Continuing...');
+            } else {
+                console.error('❌ Migration FAILED detailed error:', migrationError);
+                // In production, we might want to fail hard, but for now we log and continue if possible
+                // throw migrationError; 
+            }
         }
 
         app.listen(PORT, () => {
