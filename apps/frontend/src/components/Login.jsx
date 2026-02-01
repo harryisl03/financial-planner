@@ -532,8 +532,6 @@ export default function Login() {
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             onClick={() => {
-                                console.log("🔘 Google Button Clicked!");
-                                alert("DEBUG: Google Button Clicked!");
                                 handleGoogleLogin();
                             }}
                             className={`flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 py-3 rounded-xl transition-all hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-900 dark:text-white cursor-pointer`}
