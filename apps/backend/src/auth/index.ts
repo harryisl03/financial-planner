@@ -65,7 +65,9 @@ export const auth = betterAuth({
     advanced: {
         defaultCookieAttributes: {
             secure: process.env.NODE_ENV === 'production',
-            sameSite: "lax", // Rewrite Proxy makes us Same Origin, so 'lax' is safer and works better than 'none'
+            sameSite: "lax",
+            domain: process.env.NODE_ENV === 'production' ? 'financial-planner-web.onrender.com' : undefined,
+            path: '/',
             httpOnly: true,
         },
     },
