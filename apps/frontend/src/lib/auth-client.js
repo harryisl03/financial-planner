@@ -2,7 +2,7 @@ import { createAuthClient } from "better-auth/react";
 import { twoFactorClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
-    baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/api/auth` : "/api/auth",
+    baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/api/auth` : `${window.location.origin}/api/auth`,
     plugins: [
         twoFactorClient({
             twoFactorPage: "/two-factor", // redirection path if needed, or handle inline
