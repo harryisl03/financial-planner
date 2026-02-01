@@ -140,7 +140,7 @@ export default function Login() {
         setError('');
         try {
             await signInWithGoogle({
-                callbackURL: '/dashboard' // Explicitly redirect to dashboard after login
+                callbackURL: '/' // Redirect to root (Dashboard) after login
             });
         } catch (err) {
             console.error("Google Login Error:", err);
