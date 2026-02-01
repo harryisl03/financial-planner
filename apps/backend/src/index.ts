@@ -50,6 +50,17 @@ app.use('/api/auth', (req, res, next) => {
     if (req.headers.cookie) {
         console.log(`   Cookie Keys: ${req.headers.cookie.split(';').map(c => c.split('=')[0].trim()).join(', ')}`);
     }
+    const originalEnd = res.end;
+    res.end = function (chunk?: any, encoding?: any, cb?: any) {
+        console.log(`\n📤 AUTH RESPONSE: ${req.method} ${req.url} -> ${res.statusCode}`);
+        const setCookie = res.getHeader('set-cookie');
+        if (setCookie) {
+            console.log('   🍪 Set-Cookie:', Array.isArray(setCookie) ? setCookie : [setCookie]);
+        } else {
+            console.log('   ⚠️ No Set-Cookie header found');
+        }
+        return originalEnd.apply(res, arguments as any);
+    };
     next();
 });
 
