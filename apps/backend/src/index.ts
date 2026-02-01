@@ -59,6 +59,10 @@ app.use('/api/auth', (req, res, next) => {
         } else {
             console.log('   ⚠️ No Set-Cookie header found');
         }
+        if (req.url.includes('/callback/')) {
+            console.log(`\n🔍 CALLBACK REQUEST: ${req.method} ${req.url}`);
+            console.log('   Headers:', JSON.stringify(req.headers['cookie'] ? { cookie: 'PRESENT' } : req.headers));
+        }
         return originalEnd.apply(res, arguments as any);
     };
     next();
